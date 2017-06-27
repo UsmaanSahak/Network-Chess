@@ -2,6 +2,7 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 
 std::map<std::string,std::string> plastic; //Too lazy to keep copy and pasting.
 std::string board[8][8]; //Global.
@@ -13,18 +14,19 @@ std::string board[8][8]; //Global.
 
 void init() {
 
- plastic["b+rook"] = "♜";
- plastic["w+rook"] = "♖";
- plastic["b+knight"] = "♞";
- plastic["w+knight"] = "♘";
- plastic["b+jester"] = "♝";
- plastic["w+jester"] = "♗";
- plastic["b+queen"] = "♛";
- plastic["w+queen"] = "♕";
- plastic["b+king"] = "♚";
- plastic["w+king"] = "♔";
- plastic["b+pawn"] = "♟";
- plastic["w+pawn"] = "♙";
+ plastic["b+rook"] = " ♜ ";
+ plastic["w+rook"] = " ♖ ";
+ plastic["b+knight"] = " ♞ ";
+ plastic["w+knight"] = " ♘ ";
+ plastic["b+jester"] = " ♝ ";
+ plastic["w+jester"] = " ♗ ";
+ plastic["b+queen"] = " ♛ ";
+ plastic["w+queen"] = " ♕ ";
+ plastic["b+king"] = " ♚ ";
+ plastic["w+king"] = " ♔ ";
+ plastic["b+pawn"] = " ♟ ";
+ plastic["w+pawn"] = " ♙ ";
+
 
  board[0][0] = "b+rook";
  board[1][0] = "b+knight";
@@ -76,20 +78,20 @@ Construct a string for each row to be passed into system().
 6 - Go to the next row, y++, repeat until all 8 rows are redrawn. 
 */
 
+
 int draw() {
- system("echo -en \"\\033[s\""); //Save cursor position.
+ //system("echo -en \"\\033[s\""); //Save cursor position.
  std::string rowCall = "";
  for (int row = 0; row <= 7; row++) {
+  rowCall = "";
+  std::stringstream ss(std::stringstream::in | std::stringstream::out);
+  ss << "\\033[";
+  ss << row + 1;
+  ss << ";";
+  ss << 1;
+  ss << "f";
+  rowCall = ss.str();
   for (int col = 0; col <= 7; col++) {
-   rowCall = "";
-   std::stringstream ss(std::stringstream::in | std::stringstream::out);
-   ss << "\\033[";
-   ss << col + 1;
-   ss << ";";
-   ss << row + 1;
-   ss << "f";
-   rowCall = ss.str();
-   //rowCall += "echo -en \\033[" + (row + 1) + ";0f";
    std::string tile = board[col][row];
    if ((tile[tile.length()] == 'h') && (tile[tile.length()-1] == '+')) {
     rowCall += "\\033[7m"; //If highlighted, invert everything.
@@ -104,16 +106,72 @@ int draw() {
      if (col % 2 == 0) { rowCall += " ☒ "; }
     }
    }
+    
+   //If not an empty tile, then just make it equal to whatever value the key is.
+   rowCall += plastic[tile]; //Make sure adds as string.
+  
+   
+   
+  }
+  //std::cout << rowCall << std::endl;
+  rowCall = "echo  -en \"" + rowCall + "\"";
+  const char* callThis = rowCall.c_str();
+  //std::cout << callThis << " a " << std::endl;
+  system(callThis);
+  usleep(500000);
+ }   
+ //system("echo -en \"\\033[u\""); //Restore cursor position.
+ 
+}
+ 
+ 
+ 
+ 
+ 
+ /*
+ //system("echo -en \"\\033[s\""); //Save cursor position.
+ std::string rowCall = "";
+ for (int row = 0; row <= 7; row++) {
+  for (int col = 0; col <= 7; col++) {
+   rowCall = "";
+   std::stringstream ss(std::stringstream::in | std::stringstream::out);
+   ss << "\\033[";
+   ss << col + 1;
+   ss << ";";
+   ss << row + 1;
+   ss << "f";
+   rowCall = ss.str();
+   
+   std::string tile = board[col][row];
+   if ((tile[tile.length()] == 'h') && (tile[tile.length()-1] == '+')) {
+    rowCall += "\\033[7m"; //If highlighted, invert everything.
+   }
+   if (tile == "open" || tile == "open+h") {
+   //Alternate all of the tiles like a chess board.
+    if (row % 2 == 0) {
+     if (col % 2 == 0) { rowCall += " ☐ "; }
+     if (col % 2 == 1) { rowCall += " ☒ "; }
+    } else if (row % 2 == 1) {
+     if (col % 2 == 1) { rowCall += " ☐ "; }
+     if (col % 2 == 0) { rowCall += " ☒ "; }
+    }
+   }
+  
    //If not an empty tile, then just make it equal to whatever value the key is.
    rowCall += plastic[tile]; //Make sure adds as string.
    rowCall = "echo -en \"" + rowCall + "\"";
-   std::cout << rowCall << " = rowCall " << std::endl;
-   //const char* callThis = rowCall.c_str();
+   
+   std::cout << rowCall << std::endl;
+   const char* callThis = rowCall.c_str();
    //system(callThis);
+   usleep(100000);
   }
+  
  }   
- system("echo -en \"\\033[u\""); //Restore cursor position.
+ //system("echo -en \"\\033[u\""); //Restore cursor position.
 }  
+
+*/
 
 
 class piece {
@@ -154,63 +212,7 @@ int main() {
  system("./conf.sh");
  init();
  draw();
-
-
-
-
-
-
-
+ draw();
+ draw();
 }
 
- //read a 64 size array that tells if something is there. if none, then just print the tile.
- //If there is, then instead of printing the tile, print the piece.
- 
- 
- //if array tile has no value on it and %2==0, opaque. if %2==1, clear.
- 
-
-/*
-echo -en "\033[s"
-echo -en "\033[1;0H ☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ "
-echo -en "\033[2;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[3;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[4;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[5;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[6;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[7;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[8;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[9;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[10;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[11;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[12;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[13;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[14;0H ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ "
-echo -en "\033[15;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[16;0H ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ ☒☒☒ ☐☐☐ "
-echo -en "\033[u"
-
-case wKing: //Print this
- ♔
-case wQueen:
- ♕
-case wPawn:
- ♙
-case bKing:
- ♚
-case bQueen:
- ♛
-case bPawn:
- ♟
-*/
-//For each move, replace with empty tile
-/*
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-☒ ☐ ☒ ☐ ☒ ☐ ☒ ☐ 
-*/
