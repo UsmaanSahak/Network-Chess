@@ -81,6 +81,7 @@ Construct a string for each row to be passed into system().
 
 int draw() {
  //system("echo -en \"\\033[s\""); //Save cursor position.
+ system("tput sc");
  std::string rowCall = "";
  for (int row = 0; row <= 7; row++) {
   rowCall = "";
@@ -121,7 +122,7 @@ int draw() {
   usleep(500000);
  }   
  //system("echo -en \"\\033[u\""); //Restore cursor position.
- 
+ system("tput rc"); 
 }
  
  
