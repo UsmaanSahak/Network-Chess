@@ -81,48 +81,53 @@ Construct a string for each row to be passed into system().
 
 int draw() {
  //system("echo -en \"\\033[s\""); //Save cursor position.
- system("tput sc");
+ system("tput sc;"); //Wont include tput civis for now, for debugging purposes.
+ //system("tput sc; tput civis;");
+ const char* callThis;
  std::string rowCall = "";
  for (int row = 0; row <= 7; row++) {
   rowCall = "";
+  
+  //Integrate row number into  the command.
   std::stringstream ss(std::stringstream::in | std::stringstream::out);
-  ss << "\\033[";
-  ss << row + 1;
-  ss << ";";
-  ss << 1;
-  ss << "f";
-  rowCall = ss.str();
+  ss << "tput cup ";
+  ss << row;
+  const char* callThis = ss.str().c_str(); 
+  system(callThis);
+  
+  
   for (int col = 0; col <= 7; col++) {
    std::string tile = board[col][row];
    if ((tile[tile.length()] == 'h') && (tile[tile.length()-1] == '+')) {
-    rowCall += "\\033[7m"; //If highlighted, invert everything.
-   }
+    //rowCall += "\\033[7m"; //If highlighted, invert everything.
+   } //grep "sgr0" 
    if (tile == "open" || tile == "open+h") {
    //Alternate all of the tiles like a chess board.
     if (row % 2 == 0) {
-     if (col % 2 == 0) { rowCall += " ☐ "; }
-     if (col % 2 == 1) { rowCall += " ☒ "; }
+     if (col % 2 == 0) { rowCall += " tput setab 3; echo -n \" ☐ \"; "; }
+     if (col % 2 == 1) { rowCall += " echo -n \" ☒ \"; "; }
     } else if (row % 2 == 1) {
-     if (col % 2 == 1) { rowCall += " ☐ "; }
-     if (col % 2 == 0) { rowCall += " ☒ "; }
+     if (col % 2 == 1) { rowCall += " echo -n \" ☐ \"; "; }
+     if (col % 2 == 0) { rowCall += " echo -n \" ☒ \"; "; }
     }
+    
    }
     
    //If not an empty tile, then just make it equal to whatever value the key is.
-   rowCall += plastic[tile]; //Make sure adds as string.
+   rowCall += " echo -n \"" + plastic[tile] + "\"; "; //Make sure adds as string.
   
    
    
   }
   //std::cout << rowCall << std::endl;
-  rowCall = "echo  -en \"" + rowCall + "\"";
-  const char* callThis = rowCall.c_str();
+  
+  callThis = rowCall.c_str();
   //std::cout << callThis << " a " << std::endl;
   system(callThis);
   usleep(500000);
  }   
  //system("echo -en \"\\033[u\""); //Restore cursor position.
- system("tput rc"); 
+ system("tput rc; tput cnorm;"); 
 }
  
  
