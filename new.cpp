@@ -105,6 +105,7 @@ int draw() {
     } else if (row % 2 == 1) {
      if (col % 2 == 1) { rowCall += " ☐ "; }
      if (col % 2 == 0) { rowCall += " ☒ "; }
+     afdsafsd /*test 123*/
     }
    }
     
